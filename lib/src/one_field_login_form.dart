@@ -21,13 +21,23 @@ class OneFieldLoginForm extends StatefulWidget {
     this.iconTranslateAnimationCurve = Curves.easeOut,
     this.iconHeight = 55.0,
     this.iconWidth = 55.0,
+    this.iconRadius = 55.0,
     this.iconBorder,
     this.iconSize = 55 * 4 / 7,
     this.emailIcon = Icons.mail_outline_rounded,
     this.passwordIcon = Icons.lock_outline,
     this.successIcon = Icons.arrow_forward_ios,
-    this.iconColor = Colors.white,
+    this.iconColor = Colors.black,
+    this.iconBackground = Colors.white,
     this.textFieldHeight = 55.0,
+    this.textFieldBorder,
+    this.textFieldRadius = 55.0,
+    this.textFieldColor = Colors.white,
+    this.textFieldTextColor = Colors.black,
+    this.emailHintText = "Enter email",
+    this.passwordHintText = "Enter password",
+    this.hintTextColor = Colors.grey,
+    this.textFieldPadding,
   });
 
   /// [Duration] of the animation
@@ -85,7 +95,35 @@ class OneFieldLoginForm extends StatefulWidget {
   final Function login;
 
   /// Height of the [TextField]
+  /// set to 55.0 by default
   final double textFieldHeight;
+
+  /// [Border] of the [TextField]
+  final BoxBorder? textFieldBorder;
+
+  /// [BorderRadius] of the [TextField]
+  /// set to 55.0 by default
+  final double textFieldRadius;
+
+  /// [BackgroundColor] of the [TextField]
+  final Color textFieldColor;
+
+  /// Color of the text of [TextField]
+  final Color textFieldTextColor;
+
+  /// hint texts
+  /// Hint text while entering email
+  final String emailHintText;
+
+  /// Hint text while entering password
+  final String passwordHintText;
+
+  /// [Color] for hint text
+  /// set to [Grey] by default
+  final Color hintTextColor;
+
+  /// [Padding] for the TextField
+  final EdgeInsetsGeometry? textFieldPadding;
 
   /// Height of the [IconButton]
   /// By default it's set to 55.0
@@ -94,6 +132,12 @@ class OneFieldLoginForm extends StatefulWidget {
   /// Width of the [IconButton]
   /// By default it's set to 55.0
   final double iconWidth;
+
+  /// [BackgroundColor] of the icon
+  final Color iconBackground;
+
+  /// [BorderRadius] for icon
+  final double iconRadius;
 
   /// [Border] for [IconButton]
   final BoxBorder? iconBorder;
@@ -181,11 +225,16 @@ class _OneFieldLoginFormState extends State<OneFieldLoginForm>
     _widthAnimation = TweenSequence(<TweenSequenceItem<double>>[
       TweenSequenceItem<double>(
         tween: Tween<double>(
-            begin: widget.widthLowerBound, end: widget.widthUpperBound),
+          begin: widget.widthLowerBound,
+          end: widget.widthUpperBound,
+        ),
         weight: widget.widthAnimationWeight,
       ),
     ]).animate(
-      CurvedAnimation(parent: _controller, curve: widget.widthAnimationCurve),
+      CurvedAnimation(
+        parent: _controller,
+        curve: widget.widthAnimationCurve,
+      ),
     );
 
     _controller.addStatusListener((status) {
@@ -218,38 +267,38 @@ class _OneFieldLoginFormState extends State<OneFieldLoginForm>
             Opacity(
               opacity: _fadeInAnimation.value,
               child: Center(
-                child: Text(
-                  'Welcome',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 30,
-                  ),
-                ),
+                child: null,
               ),
             ),
             Opacity(
               opacity: 1,
               child: Center(
                 child: Container(
-                  padding: EdgeInsets.only(left: 55, right: 20, top: 3),
+                  padding: widget.textFieldPadding,
                   height: widget.textFieldHeight,
                   width: _widthAnimation.value,
                   decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white, width: 1.0),
-                      borderRadius: BorderRadius.circular(55),
-                      color: Colors.black),
+                    border: widget.textFieldBorder,
+                    borderRadius: BorderRadius.circular(widget.textFieldRadius),
+                    color: widget.textFieldColor,
+                  ),
                   child: TextField(
                     autofocus: true,
                     maxLines: 1,
                     controller: widget.textEditingController,
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: widget.textFieldTextColor),
                     obscureText: !_isEmail,
                     decoration: InputDecoration(
-                        enabledBorder: InputBorder.none,
-                        disabledBorder: InputBorder.none,
-                        border: InputBorder.none,
-                        hintText: _isEmail ? "Your email" : "Password",
-                        hintStyle: TextStyle(color: Colors.grey)),
+                      enabledBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
+                      border: InputBorder.none,
+                      hintText: _isEmail
+                          ? widget.emailHintText
+                          : widget.passwordHintText,
+                      hintStyle: TextStyle(
+                        color: widget.hintTextColor,
+                      ),
+                    ),
                     onSubmitted: (value) {
                       if (!_emailEntered && !_isComplete) {
                         if (widget.validateEmail != null) {
@@ -258,7 +307,7 @@ class _OneFieldLoginFormState extends State<OneFieldLoginForm>
                         widget.onEmailSubmit();
 
                         _controller.reverse();
-                        Timer(Duration(milliseconds: 200), () {
+                        Timer(widget.animationDuration, () {
                           _controller.forward();
                         });
 
@@ -273,6 +322,7 @@ class _OneFieldLoginFormState extends State<OneFieldLoginForm>
                         }
                         widget.onPasswordSubmit();
 
+                        widget.login();
                         setState(() {
                           _passwordEntered = true;
                           // _passwordController.forward();
@@ -282,7 +332,6 @@ class _OneFieldLoginFormState extends State<OneFieldLoginForm>
                         setState(() {
                           _isComplete = true;
                         });
-                        widget.login();
                         _controller.forward();
                       }
                     },
@@ -298,9 +347,11 @@ class _OneFieldLoginFormState extends State<OneFieldLoginForm>
                   width: widget.iconWidth,
                   margin: EdgeInsets.only(right: _slidingAnimation.value),
                   decoration: BoxDecoration(
-                    color: Colors.black,
+                    color: widget.iconBackground,
                     border: widget.iconBorder,
-                    borderRadius: BorderRadius.circular(55),
+                    borderRadius: BorderRadius.circular(
+                      widget.iconRadius,
+                    ),
                   ),
                   child: IconButton(
                     color: widget.iconColor,

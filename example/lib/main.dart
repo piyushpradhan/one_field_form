@@ -27,9 +27,12 @@ class _MyAppState extends State<MyApp> {
           child: OneFieldLoginForm(
             animationDuration: Duration(milliseconds: 200),
             textEditingController: controller,
-            login: () {},
+            login: () {
+              print("logged in");
+            },
             onEmailSubmit: () {},
             onPasswordSubmit: () {},
+            textFieldPadding: EdgeInsets.only(left: 55, right: 20, top: 3),
           ),
         ),
       ),
