@@ -38,7 +38,18 @@ class OneFieldLoginForm extends StatefulWidget {
     this.passwordHintText = "Enter password",
     this.hintTextColor = Colors.grey,
     this.textFieldPadding,
+    this.postFormSubmitWidget,
+    this.fadeDuration,
   });
+
+  /// [Widget] displayed after form is successfully submitted
+  final Widget? postFormSubmitWidget;
+
+  /// [Duration] of the fade in and fade out animation
+  /// Applied to the [postFormSubmitWidget] and [OneFieldLoginForm]
+  /// Animation that makes the form disappear and postFormSubmitWidget appear on submission
+  /// set to 200 milliseconds by default
+  final Duration? fadeDuration;
 
   /// [Duration] of the animation
   final Duration animationDuration;
@@ -172,7 +183,7 @@ class _OneFieldLoginFormState extends State<OneFieldLoginForm>
 
   /// [Controller] for the base animation
   late AnimationController _controller;
-  late AnimationController _passwordController;
+  late AnimationController _submissionController;
   late Animation<double> _slidingAnimation;
   late Animation<double> _widthAnimation;
   late Animation<double> _fadeOutAnimation;
@@ -182,31 +193,41 @@ class _OneFieldLoginFormState extends State<OneFieldLoginForm>
   void initState() {
     super.initState();
 
-    _controller =
-        AnimationController(duration: widget.animationDuration, vsync: this);
+    _controller = AnimationController(
+      duration: widget.animationDuration,
+      vsync: this,
+    );
 
-    _passwordController =
-        AnimationController(duration: Duration(milliseconds: 200), vsync: this);
+    _submissionController = AnimationController(
+      duration: widget.fadeDuration != null
+          ? widget.fadeDuration
+          : Duration(milliseconds: 200),
+      vsync: this,
+    );
 
     _fadeOutAnimation = TweenSequence(<TweenSequenceItem<double>>[
       TweenSequenceItem<double>(
         tween: Tween<double>(begin: 1, end: 0),
         weight: 50,
       ),
-    ]).animate(CurvedAnimation(
-      parent: _passwordController,
-      curve: Curves.easeOut,
-    ));
+    ]).animate(
+      CurvedAnimation(
+        parent: _submissionController,
+        curve: Curves.easeOut,
+      ),
+    );
 
     _fadeInAnimation = TweenSequence(<TweenSequenceItem<double>>[
       TweenSequenceItem<double>(
         tween: Tween<double>(begin: 0, end: 1),
         weight: 50,
       ),
-    ]).animate(CurvedAnimation(
-      parent: _passwordController,
-      curve: Curves.easeIn,
-    ));
+    ]).animate(
+      CurvedAnimation(
+        parent: _submissionController,
+        curve: Curves.easeIn,
+      ),
+    );
 
     _slidingAnimation = TweenSequence(
       <TweenSequenceItem<double>>[
@@ -267,11 +288,11 @@ class _OneFieldLoginFormState extends State<OneFieldLoginForm>
             Opacity(
               opacity: _fadeInAnimation.value,
               child: Center(
-                child: null,
+                child: widget.postFormSubmitWidget,
               ),
             ),
             Opacity(
-              opacity: 1,
+              opacity: _passwordEntered ? _fadeOutAnimation.value : 1,
               child: Center(
                 child: Container(
                   padding: widget.textFieldPadding,
@@ -325,7 +346,9 @@ class _OneFieldLoginFormState extends State<OneFieldLoginForm>
                         widget.login();
                         setState(() {
                           _passwordEntered = true;
-                          // _passwordController.forward();
+
+                          // animation controller for post form submission
+                          _submissionController.forward();
                         });
                         _controller.reverse();
                       } else if (_passwordEntered && !_isComplete) {
