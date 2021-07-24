@@ -22,7 +22,6 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        backgroundColor: Colors.black,
         body: Center(
           child: OneFieldLoginForm(
             animationDuration: Duration(milliseconds: 200),
@@ -33,6 +32,17 @@ class _MyAppState extends State<MyApp> {
             onEmailSubmit: () {},
             onPasswordSubmit: () {},
             textFieldPadding: EdgeInsets.only(left: 55, right: 20, top: 3),
+            textFieldBorderStyle: BorderStyle.solid,
+            iconBorderStyle: BorderStyle.solid,
+            iconErrorColor: Colors.red,
+            textFieldErrorBorderColor: Colors.red,
+            iconErrorBorderColor: Colors.red,
+            validateEmail: () {
+              return controller.text.isNotEmpty;
+            },
+            validatePassword: () {
+              return controller.text.isNotEmpty;
+            },
           ),
         ),
       ),

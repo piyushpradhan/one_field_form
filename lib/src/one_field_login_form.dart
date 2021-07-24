@@ -22,18 +22,27 @@ class OneFieldLoginForm extends StatefulWidget {
     this.iconHeight = 55.0,
     this.iconWidth = 55.0,
     this.iconRadius = 55.0,
-    this.iconBorder,
+    this.iconBorderWidth = 2.0,
+    this.iconBorderColor = Colors.black,
+    this.iconBorderStyle = BorderStyle.none,
     this.iconSize = 55 * 4 / 7,
     this.emailIcon = Icons.mail_outline_rounded,
     this.passwordIcon = Icons.lock_outline,
     this.successIcon = Icons.arrow_forward_ios,
     this.iconColor = Colors.black,
     this.iconBackground = Colors.white,
+    this.iconErrorBackgroundColor = Colors.white,
+    this.iconErrorColor = Colors.red,
+    this.iconErrorBorderColor = Colors.red,
     this.textFieldHeight = 55.0,
-    this.textFieldBorder,
+    this.textFieldBorderWidth = 2.0,
+    this.textFieldBorderColor = Colors.black,
+    this.textFieldBorderStyle = BorderStyle.none,
     this.textFieldRadius = 55.0,
     this.textFieldColor = Colors.white,
     this.textFieldTextColor = Colors.black,
+    this.textFieldErrorBackgroundColor = Colors.white,
+    this.textFieldErrorBorderColor = Colors.red,
     this.emailHintText = "Enter email",
     this.passwordHintText = "Enter password",
     this.hintTextColor = Colors.grey,
@@ -110,7 +119,11 @@ class OneFieldLoginForm extends StatefulWidget {
   final double textFieldHeight;
 
   /// [Border] of the [TextField]
-  final BoxBorder? textFieldBorder;
+  /// By default [BorderStyle] is set to none
+  /// The border won't be visible initially
+  final Color textFieldBorderColor;
+  final double textFieldBorderWidth;
+  final BorderStyle textFieldBorderStyle;
 
   /// [BorderRadius] of the [TextField]
   /// set to 55.0 by default
@@ -133,6 +146,14 @@ class OneFieldLoginForm extends StatefulWidget {
   /// set to [Grey] by default
   final Color hintTextColor;
 
+  /// [Color] of TextField Background
+  /// when invalid data is submitted
+  final Color textFieldErrorBackgroundColor;
+
+  /// [Color] of TextField Border
+  /// when invalid data is submitted
+  final Color textFieldErrorBorderColor;
+
   /// [Padding] for the TextField
   final EdgeInsetsGeometry? textFieldPadding;
 
@@ -151,7 +172,20 @@ class OneFieldLoginForm extends StatefulWidget {
   final double iconRadius;
 
   /// [Border] for [IconButton]
-  final BoxBorder? iconBorder;
+  /// By default [BorderStyle] is set to none
+  /// The border won't be visible initially
+  final Color iconBorderColor;
+  final double iconBorderWidth;
+  final BorderStyle iconBorderStyle;
+
+  /// [Color] of Icon Background when invalid data is submitted
+  final Color iconErrorBackgroundColor;
+
+  /// [Color] of Icon when invalid data is submitted
+  final Color iconErrorColor;
+
+  /// [Color] of Icon Border when invalid data is submitted
+  final Color iconErrorBorderColor;
 
   /// [Size] of the icon
   final double iconSize;
@@ -180,9 +214,12 @@ class _OneFieldLoginFormState extends State<OneFieldLoginForm>
   bool _passwordEntered = false;
   bool _emailEntered = false;
   bool _isComplete = false;
+  bool _isInvalid = false;
 
   /// [Controller] for the base animation
   late AnimationController _controller;
+
+  /// [Controller] for post form submission animation
   late AnimationController _submissionController;
   late Animation<double> _slidingAnimation;
   late Animation<double> _widthAnimation;
@@ -299,9 +336,17 @@ class _OneFieldLoginFormState extends State<OneFieldLoginForm>
                   height: widget.textFieldHeight,
                   width: _widthAnimation.value,
                   decoration: BoxDecoration(
-                    border: widget.textFieldBorder,
+                    border: Border.all(
+                      width: widget.textFieldBorderWidth,
+                      color: _isInvalid
+                          ? widget.textFieldErrorBorderColor
+                          : widget.textFieldBorderColor,
+                      style: widget.textFieldBorderStyle,
+                    ),
                     borderRadius: BorderRadius.circular(widget.textFieldRadius),
-                    color: widget.textFieldColor,
+                    color: _isInvalid
+                        ? widget.textFieldErrorBackgroundColor
+                        : widget.textFieldColor,
                   ),
                   child: TextField(
                     autofocus: true,
@@ -323,7 +368,14 @@ class _OneFieldLoginFormState extends State<OneFieldLoginForm>
                     onSubmitted: (value) {
                       if (!_emailEntered && !_isComplete) {
                         if (widget.validateEmail != null) {
-                          widget.validateEmail!();
+                          if (!widget.validateEmail!()) {
+                            setState(() {
+                              _isInvalid = true;
+                            });
+                            return;
+                          } else {
+                            _isInvalid = false;
+                          }
                         }
                         widget.onEmailSubmit();
 
@@ -339,7 +391,14 @@ class _OneFieldLoginFormState extends State<OneFieldLoginForm>
                         });
                       } else if (_emailEntered && !_isComplete) {
                         if (widget.validatePassword != null) {
-                          widget.validatePassword!();
+                          if (!widget.validatePassword!()) {
+                            setState(() {
+                              _isInvalid = true;
+                            });
+                            return;
+                          } else {
+                            _isInvalid = false;
+                          }
                         }
                         widget.onPasswordSubmit();
 
@@ -347,7 +406,6 @@ class _OneFieldLoginFormState extends State<OneFieldLoginForm>
                         setState(() {
                           _passwordEntered = true;
 
-                          // animation controller for post form submission
                           _submissionController.forward();
                         });
                         _controller.reverse();
@@ -371,13 +429,20 @@ class _OneFieldLoginFormState extends State<OneFieldLoginForm>
                   margin: EdgeInsets.only(right: _slidingAnimation.value),
                   decoration: BoxDecoration(
                     color: widget.iconBackground,
-                    border: widget.iconBorder,
+                    border: Border.all(
+                      width: widget.iconBorderWidth,
+                      color: _isInvalid
+                          ? widget.iconErrorBorderColor
+                          : widget.iconBorderColor,
+                      style: widget.iconBorderStyle,
+                    ),
                     borderRadius: BorderRadius.circular(
                       widget.iconRadius,
                     ),
                   ),
                   child: IconButton(
-                    color: widget.iconColor,
+                    color:
+                        _isInvalid ? widget.iconErrorColor : widget.iconColor,
                     icon: _isEmail
                         ? Icon(widget.emailIcon)
                         : (_passwordEntered
